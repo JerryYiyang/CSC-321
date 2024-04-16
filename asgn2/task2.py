@@ -1,4 +1,4 @@
-from Crypto.Cipher import AES
+from Crypto.Cipher import AES # type: ignore
 import os
 import urllib.parse # for parsing URL
 
