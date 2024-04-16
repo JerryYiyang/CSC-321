@@ -32,11 +32,10 @@
 # # (2) parse the string for the pattern “;admin=true;” and, 
 # # (3) return true or false based on whether that string exists. If you’ve written submit() correctly, it should be impossible for a user to provide input to submit() that will result in verify() returning true.
 
-
-
-import os
-import urllib.parse
 from Crypto.Cipher import AES
+import os
+import urllib.parse #for parsing URL
+
 
 # Generate a random AES key and IV
 key = os.urandom(16)
@@ -79,15 +78,22 @@ def verify(ciphertext):
     else:
         return False
 
-# Example usage
+# usage
 ciphertext = submit("You're the man now, dog")
 print("Ciphertext:", ciphertext.hex())
 print("Verified:", verify(ciphertext))
 
 # Demonstrate the bit-flipping attack
-# Hint: Flipping one bit in ciphertext block ci will result in a scrambled plaintext block mi, but will flip the same bit in plaintext block mi+1
-modified_ciphertext = bytearray(ciphertext)
-modified_ciphertext[16] ^= 0x01  # Flip a bit in the second ciphertext block
-modified_ciphertext = bytes(modified_ciphertext)
-print("Modified ciphertext:", modified_ciphertext.hex())
-print("Verified (modified):", verify(modified_ciphertext))
+def manipulate_ciphertext(ciphertext):
+    # Manipulate the ciphertext to flip a bit in the block
+    #  assume we want to flip the first bit of the first block
+    # This would flip the same bit in the second block due to CBC mode
+
+    modified_ciphertext = bytearray(ciphertext)
+    modified_ciphertext[0] ^= 1  # Flip the first bit of the first block
+
+    return bytes(modified_ciphertext)
+modified_ciphertext = manipulate_ciphertext(ciphertext)
+print("Modified Ciphertext:", modified_ciphertext.hex())
+print("Verified:", verify(modified_ciphertext))
+
