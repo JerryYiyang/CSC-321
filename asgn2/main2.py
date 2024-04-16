@@ -45,3 +45,14 @@ class Main:
             return True
         else:
             return False
+        
+    # Demonstrate the bit-flipping attack
+    def manipulate_ciphertext(self, ciphertext):
+        # Manipulate the ciphertext to flip a bit in the block
+        # Assume we want to flip the first bit of the first block
+        # This would flip the same bit in the second block due to CBC mode
+
+        modified_ciphertext = bytearray(ciphertext)
+        modified_ciphertext[0] ^= 1  # Flip the first bit of the first block
+
+        return bytes(modified_ciphertext)
