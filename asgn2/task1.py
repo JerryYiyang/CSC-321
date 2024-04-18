@@ -18,6 +18,7 @@ class ECB:
 
     def main(self, filename):
         with open(filename, "rb") as file:
+            header = file.read(54) 
             while True:
                 block = file.read(16)
                 if not block:
@@ -25,33 +26,31 @@ class ECB:
                 if len(block) < 16:
                     block = self.padding(block)
                 self.encrypt(block)
-        return self.cipher
+        with open("out.bmp", "wb") as output_file:
+            output_file.write(header + self.cipher)
 
 
 class CBC:
     def __init__(self):
         self.key = os.urandom(16)
         self.iv = os.urandom(16)
-        self.cipher = None
+        self.cipher = b""
 
     def padding(self, block):
-        padLen = 16 - len(block)
-        # creates padLen number of bytes needed
-        pad = bytes([padLen]) * padLen
+        pad_len = 16 - len(block)
+        pad = bytes([pad_len]) * pad_len
         return block + pad
     
-    # takes in 128 bit block of plain text at a time
     def encrypt(self, block):
         xor = bytes(x ^ y for x, y in zip(self.iv, block))
-        temp = AES.new(self.key, AES.MODE_ECB).encrypt(xor)
-        if self.cipher == None:
-            self.cipher = temp
-        else:
-            self.cipher += temp
-            self.iv = temp
+        aes = AES.new(self.key, AES.MODE_ECB)
+        temp = aes.encrypt(xor)
+        self.cipher += temp
+        self.iv = temp
 
     def main(self, filepath):
         with open(filepath, "rb") as file:
+            header = file.read(54)
             while True:
                 block = file.read(16)
                 if not block:
@@ -59,5 +58,5 @@ class CBC:
                 if len(block) < 16:
                     block = self.padding(block)
                 self.encrypt(block)
-        file.close()
-        return self.cipher
+        with open("out.bmp", "wb") as output_file:
+            output_file.write(header + self.cipher)
