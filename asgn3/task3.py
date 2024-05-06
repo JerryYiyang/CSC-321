@@ -31,3 +31,10 @@ class RSA:
         gcd, x, y = self.extended_gcd(e, phi)
         return x % phi
 
+# If Mallory sends 1 as c', then she will know what s is since 1 powered by anything is 1
+# then mod by anything is also 1 so s will be 1.
+
+# Also, just in general, if Mallory sends a c', then Bob will recieved modified plaintext m' because of c' and the
+# message will be manipulated and cause confusion
+
+# Sign(m3, d) = m3^d mod n = (m1 * m2)^d mod n = (m1^d * m2^d) mod n
