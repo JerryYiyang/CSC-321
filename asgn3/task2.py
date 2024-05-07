@@ -1,23 +1,25 @@
 import hashlib
-from Crypto.Cipher import AES # type: ignore
-from Crypto.Util.Padding import pad, unpad # type: ignore
+from Crypto.Cipher import AES  # type: ignore
+from Crypto.Util.Padding import pad, unpad  # type: ignore
 
 # part 1
 # Define the prime number and generator for smaller parameters
 def mitm1():
-    q = 37
-    alpha = 5
+    q = int("B10B8F96A080E01DDE92DE5EAE5D54EC52C99FBCFB06A3C69A6A9DCA52D23B616073E28675A23D189838EF1E2EE652C013ECB4AEA906112324975C3CD49B83BFACCBDD7D90C4BD7098488E9C219A73724EFFD6FAE5644738FAA31A4FF55BCCC0A151AF5F0DC8B4BD45BF37DF365C1A65E68CFDA76D4DA708DF1FB2BC2E4A4371", 16)
+    alpha = int("A4D1CBD5C3FD34126765A442EFB99905F8104DD258AC507FD6406CFF14266D31266FEA1E5C41564B777E690F5504F213160217B4B01B886A5E91547F9E2749F4D7FBD7D3B9A92EE1909D0D2263F80A76A6A24C087A091F531DBF0A0169B6A28AD662A4D18E73AFA32D779D5918D08BC8858F4DCEF97C2A24855E6EEB22B3B2E5", 16)
 
     # Generate private keys for Alice and Bob
-    private_key_A = 6  #arbitrary value for demonstration
-    private_key_B = 15   #arbitrary value for demonstration
+    private_key_A = 6  # arbitrary value for demonstration
+    private_key_B = 15  # arbitrary value for demonstration
 
-    # No need to calculate public keys since they're getting replaced anyway
+    # Calculate public keys for Alice and Bob
+    public_key_A = pow(alpha, private_key_A, q)
+    public_key_B = pow(alpha, private_key_B, q)
 
     # Perform key exchange using q instead of public keys
     # Both results are just 0
-    shared_secret_A = (q ** private_key_A) % q
-    shared_secret_B = (q ** private_key_B) % q
+    shared_secret_A = pow(q, private_key_A, q)
+    shared_secret_B = pow(q, private_key_B, q)
 
     shared_secret_A_bytes = shared_secret_A.to_bytes(32, byteorder='big')
     shared_secret_B_bytes = shared_secret_B.to_bytes(32, byteorder='big')
@@ -48,7 +50,7 @@ def mitm1():
 
 def mitm2():
     # Define the prime number and generator for smaller parameters
-    q = 37
+    q = int("B10B8F96A080E01DDE92DE5EAE5D54EC52C99FBCFB06A3C69A6A9DCA52D23B616073E28675A23D189838EF1E2EE652C013ECB4AEA906112324975C3CD49B83BFACCBDD7D90C4BD7098488E9C219A73724EFFD6FAE5644738FAA31A4FF55BCCC0A151AF5F0DC8B4BD45BF37DF365C1A65E68CFDA76D4DA708DF1FB2BC2E4A4371", 16)
     alpha = 1
 
     print("Parameters:")
@@ -57,12 +59,12 @@ def mitm2():
     print()
 
     # Generate private keys for Alice and Bob
-    private_key_A = 6  #arbitrary value for demonstration
-    private_key_B = 15   #arbitrary value for demonstration
+    private_key_A = 6  # arbitrary value for demonstration
+    private_key_B = 15  # arbitrary value for demonstration
 
     # Calculate public keys for Alice and Bob
-    public_key_A = (alpha ** private_key_A) % q
-    public_key_B = (alpha ** private_key_B) % q
+    public_key_A = pow(alpha, private_key_A, q)
+    public_key_B = pow(alpha, private_key_B, q)
 
     # Since alpha is one the resulting public key is just 1
 
@@ -70,8 +72,8 @@ def mitm2():
     print("Alice:", public_key_A)
 
     # Perform key exchange
-    shared_secret_A = (public_key_B ** private_key_A) % q
-    shared_secret_B = (public_key_A ** private_key_B) % q
+    shared_secret_A = pow(public_key_B, private_key_A, q)
+    shared_secret_B = pow(public_key_A, private_key_B, q)
 
     # the resulting shared secret is also 1
 
