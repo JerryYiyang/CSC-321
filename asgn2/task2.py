@@ -1,4 +1,4 @@
-from Crypto.Cipher import AES # type: ignore
+from Crypto.Cipher import AES
 import os
 import urllib.parse
 
@@ -34,8 +34,15 @@ class Main:
         cipher = AES.new(self.key, AES.MODE_CBC, self.iv)
         decrypted = cipher.decrypt(ciphertext)
         
+        # Remove padding
+        pad_len = decrypted[-1]
+        decrypted = decrypted[:-pad_len]
+
         # Decode the URL-encoded string
-        decrypted = urllib.parse.unquote(decrypted.decode())
+        try:
+            decrypted = urllib.parse.unquote(decrypted.decode('utf-8'))
+        except UnicodeDecodeError:
+            return False
         
         # Check if the decrypted ciphertext contains the ";admin=true;" pattern
         if ";admin=true;" in decrypted:
@@ -44,31 +51,31 @@ class Main:
             return False
 
     def manipulate_ciphertext(self, ciphertext):
-        # Decrypt the ciphertext to find the position of ";admin=true;"
+        block_size = AES.block_size
+        
+        # The desired plaintext pattern we want to achieve
+        desired_plaintext = b";admin=true;"
+        
+        # Calculate the position in the plaintext where we want the pattern to appear
+        prepend_length = len("userid=456;userdata=")
+        position = prepend_length
+
+        # Determine the block index and position within the block for the desired_plaintext
+        block_index = position // block_size
+        within_block_index = position % block_size
+
+        # Decrypt the ciphertext to manipulate it
         cipher = AES.new(self.key, AES.MODE_CBC, self.iv)
         decrypted = cipher.decrypt(ciphertext)
 
-        # Check if the ";admin=true;" pattern is present anywhere in the decrypted ciphertext
-        if b";admin=true;" in decrypted:
-            print(".")
-        else:
-            print(".")
-            return ciphertext
-
-        # Calculate the block index based on the pattern index
-        block_size = AES.block_size
-        pattern_index = decrypted.find(b";admin=true;")
-        block_index = pattern_index // block_size
-        offset = block_index * block_size
-
-        # Flip the last bit of the block containing the ";admin=true;" pattern
+        # Create a mutable byte array of the ciphertext
         modified_ciphertext = bytearray(ciphertext)
-        modified_ciphertext[offset - 1] ^= 0x01  # Flipping the last bit of the previous block
-        modified_ciphertext[offset + AES.block_size - 1] ^= 0x01  # Flipping the corresponding bit in the next block
 
-        # Adjust the padding to ensure valid padding after the bit-flipping operation
-        padding_length = 16 - (len(decrypted) % block_size)
-        modified_ciphertext = modified_ciphertext[:-padding_length] + bytes([padding_length]) * padding_length
+        # Manipulate the bytes in the preceding block to achieve the desired plaintext
+        for i in range(len(desired_plaintext)):
+            block_pos = block_index * block_size + within_block_index + i
+            prev_block_pos = block_pos - block_size
+            modified_ciphertext[prev_block_pos] ^= desired_plaintext[i] ^ decrypted[block_pos]
 
         return bytes(modified_ciphertext)
 
