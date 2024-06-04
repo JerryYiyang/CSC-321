@@ -64,10 +64,6 @@ class Main:
         block_index = position // block_size
         within_block_index = position % block_size
 
-        # Decrypt the ciphertext to manipulate it
-        cipher = AES.new(self.key, AES.MODE_CBC, self.iv)
-        decrypted = cipher.decrypt(ciphertext)
-
         # Create a mutable byte array of the ciphertext
         modified_ciphertext = bytearray(ciphertext)
 
@@ -75,7 +71,7 @@ class Main:
         for i in range(len(desired_plaintext)):
             block_pos = block_index * block_size + within_block_index + i
             prev_block_pos = block_pos - block_size
-            modified_ciphertext[prev_block_pos] ^= desired_plaintext[i] ^ decrypted[block_pos]
+            modified_ciphertext[prev_block_pos] ^= desired_plaintext[i] ^ ciphertext[block_pos]
 
         return bytes(modified_ciphertext)
 
